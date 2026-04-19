@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tab Master - Dashboard</title>
+  <link rel="stylesheet" href="options.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    
+    <aside class="sidebar">
+      <div class="logo">
+        <span class="logo-emoji">🚀</span>
+        <h2>Tab Master</h2>
+      </div>
+      <nav>
+        <a href="#" class="nav-item active">
+          <span class="nav-icon">📋</span> Rules
+        </a>
+        <a href="#" class="nav-item">
+          <span class="nav-icon">⚙️</span> General
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <p>Made for productivity</p>
+      </div>
+    </aside>
+
+    <main class="content">
+      <header class="top-header">
+        <h1>Tab Rules</h1>
+        <button id="addRuleBtn" class="btn-primary">
+          <span>+</span> Create New Rule
+        </button>
+      </header>
+
+      <section class="rules-list-container">
+        <ul id="rulesList" class="rules-list">
+          <!-- Rules will be dynamically injected here -->
+        </ul>
+        <div id="emptyState" class="empty-state hidden">
+          <div class="empty-icon">📭</div>
+          <h3>No rules yet</h3>
+          <p>Create a rule to start customizing your tabs!</p>
+        </div>
+      </section>
+    </main>
+
+  </div>
+
+  <!-- Modal for Creating/Editing Rules -->
+  <div id="ruleModal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modalTitle">Create New Rule</h2>
+        <button id="closeModalBtn" class="btn-close">×</button>
+      </div>
+      
+      <div class="modal-body">
+        <form id="ruleForm">
+          <div class="form-group">
+            <label>If the URL...</label>
+            <div class="input-group">
+              <select id="conditionType" required>
+                <option value="startsWith">Starts with</option>
+                <option value="endsWith">Ends with</option>
+                <option value="contains">Contains</option>
+                <option value="notContains">Does not contain</option>
+                <option value="exact">Is exactly</option>
+              </select>
+              <input type="text" id="conditionValue" placeholder="e.g. github.com" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Then change the Tab Name to...</label>
+            <input type="text" id="actionTitle" placeholder="Leave blank to keep original name">
+          </div>
+
+          <div class="form-group">
+            <label>And change the Icon to...</label>
+            <div class="icon-selector-group">
+              <div class="radio-group">
+                <label>
+                  <input type="radio" name="iconType" value="emoji" checked> 
+                  Emoji
+                </label>
+                <label>
+                  <input type="radio" name="iconType" value="image"> 
+                  Custom Image
+                </label>
+              </div>
+
+              <div id="emojiInputGroup" class="sub-input-group">
+                <input type="text" id="actionEmoji" placeholder="Enter an emoji (e.g. 🔥)" maxlength="5">
+              </div>
+
+              <div id="imageInputGroup" class="sub-input-group hidden">
+                <input type="file" id="actionImage" accept="image/png, image/jpeg, image/x-icon, image/svg+xml">
+                <div id="imagePreview" class="image-preview">
+                  <span class="preview-placeholder">No image selected</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      
+      <div class="modal-footer">
+        <button id="cancelRuleBtn" class="btn-secondary">Cancel</button>
+        <button id="saveRuleBtn" class="btn-primary">Save Rule</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>
