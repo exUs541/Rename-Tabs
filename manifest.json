@@ -28,5 +28,8 @@
     "default_popup": "popup/popup.html",
     "default_title": "Open Tab Customizer Settings"
   },
-  "options_page": "options/options.html"
+  "options_page": "options/options.html",
+  "background": {
+    "service_worker": "background.js"
+  }
 }

@@ -16,10 +16,10 @@
         <h2>Tab Master</h2>
       </div>
       <nav>
-        <a href="#" class="nav-item active">
+        <a href="#" class="nav-item active" id="navRules">
           <span class="nav-icon">📋</span> Rules
         </a>
-        <a href="#" class="nav-item">
+        <a href="#" class="nav-item" id="navGeneral">
           <span class="nav-icon">⚙️</span> General
         </a>
       </nav>
@@ -29,23 +29,56 @@
     </aside>
 
     <main class="content">
-      <header class="top-header">
-        <h1>Tab Rules</h1>
-        <button id="addRuleBtn" class="btn-primary">
-          <span>+</span> Create New Rule
-        </button>
-      </header>
+      <div id="rulesSection">
+        <header class="top-header">
+          <h1>Tab Rules</h1>
+          <button id="addRuleBtn" class="btn-primary">
+            <span>+</span> Create New Rule
+          </button>
+        </header>
 
-      <section class="rules-list-container">
-        <ul id="rulesList" class="rules-list">
-          <!-- Rules will be dynamically injected here -->
-        </ul>
-        <div id="emptyState" class="empty-state hidden">
-          <div class="empty-icon">📭</div>
-          <h3>No rules yet</h3>
-          <p>Create a rule to start customizing your tabs!</p>
-        </div>
-      </section>
+        <section class="rules-list-container">
+          <ul id="rulesList" class="rules-list">
+            <!-- Rules will be dynamically injected here -->
+          </ul>
+          <div id="emptyState" class="empty-state hidden">
+            <div class="empty-icon">📭</div>
+            <h3>No rules yet</h3>
+            <p>Create a rule to start customizing your tabs!</p>
+          </div>
+        </section>
+      </div>
+
+      <div id="generalSection" class="hidden">
+        <header class="top-header">
+          <h1>General Settings</h1>
+        </header>
+
+        <section class="settings-container">
+          <div class="settings-card">
+            <div class="setting-info">
+              <h3>Sync Across Devices</h3>
+              <p>Keep your text & emoji rules in sync. <em>(Custom images cannot be synced and will remain local)</em>.</p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="syncToggle">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="settings-card">
+            <div class="setting-info">
+              <h3>Data Management</h3>
+              <p>Backup or restore your TabMaster rules (JSON).</p>
+            </div>
+            <div class="setting-actions">
+              <button id="exportBtn" class="btn-secondary">📤 Export Backup</button>
+              <button id="importBtn" class="btn-secondary">📥 Import Backup</button>
+              <input type="file" id="importFileInput" accept=".json" style="display: none;">
+            </div>
+          </div>
+        </section>
+      </div>
     </main>
 
   </div>

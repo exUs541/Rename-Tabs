@@ -23,12 +23,35 @@ document.addEventListener('DOMContentLoaded', () => {
   const emojiInputGroup = document.getElementById('emojiInputGroup');
   const imageInputGroup = document.getElementById('imageInputGroup');
 
+  // New Genenral Tab Elements
+  const navRules = document.getElementById('navRules');
+  const navGeneral = document.getElementById('navGeneral');
+  const rulesSection = document.getElementById('rulesSection');
+  const generalSection = document.getElementById('generalSection');
+  const syncToggle = document.getElementById('syncToggle');
+  const exportBtn = document.getElementById('exportBtn');
+  const importBtn = document.getElementById('importBtn');
+  const importFileInput = document.getElementById('importFileInput');
+
   let currentRules = [];
   let editingRuleId = null;
   let currentImageBase64 = '';
+  let isSyncEnabled = false;
 
   // Initialization
   loadRules();
+  
+  chrome.storage.local.get(['syncEnabled'], (res) => {
+    isSyncEnabled = !!res.syncEnabled;
+    syncToggle.checked = isSyncEnabled;
+  });
+
+  // Listen for background updates
+  chrome.storage.onChanged.addListener((changes, space) => {
+    if (space === 'local' && changes.rules) {
+      loadRules(); // reload if background synced new rules
+    }
+  });
 
   // ====== Event Listeners ======
 
@@ -39,9 +62,79 @@ document.addEventListener('DOMContentLoaded', () => {
   closeModalBtn.addEventListener('click', closeModal);
   cancelRuleBtn.addEventListener('click', closeModal);
   
-  // Close modal on click outside
+  // close modal on click outside
   ruleModal.addEventListener('click', (e) => {
     if (e.target === ruleModal) closeModal();
+  });
+
+  // Tab Switching
+  navRules.addEventListener('click', (e) => {
+    e.preventDefault();
+    navRules.classList.add('active');
+    navGeneral.classList.remove('active');
+    rulesSection.classList.remove('hidden');
+    generalSection.classList.add('hidden');
+  });
+
+  navGeneral.addEventListener('click', (e) => {
+    e.preventDefault();
+    navGeneral.classList.add('active');
+    navRules.classList.remove('active');
+    generalSection.classList.remove('hidden');
+    rulesSection.classList.add('hidden');
+  });
+
+  // Sync Toggle
+  syncToggle.addEventListener('change', (e) => {
+    isSyncEnabled = e.target.checked;
+    chrome.storage.local.set({ syncEnabled: isSyncEnabled }, () => {
+      if (isSyncEnabled) {
+        chrome.runtime.sendMessage({ type: 'FORCE_SYNC_PUSH' });
+      }
+      renderRules(); // re-render to show/hide the local-only badges
+    });
+  });
+
+  // Export
+  exportBtn.addEventListener('click', () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(currentRules, null, 2));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", "tabmaster-rules.json");
+    document.body.appendChild(downloadAnchorNode); 
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+  });
+
+  // Import
+  importBtn.addEventListener('click', () => {
+    importFileInput.click();
+  });
+
+  importFileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const importedRules = JSON.parse(event.target.result);
+        if (!Array.isArray(importedRules)) throw new Error("Invalid format");
+        
+        // Overwrite rules
+        currentRules = importedRules;
+        chrome.storage.local.set({ rules: currentRules }, () => {
+          renderRules();
+          alert("Rules imported successfully!");
+          importFileInput.value = ''; // reset
+        });
+
+      } catch (err) {
+        alert("Error parsing JSON file. Please ensure it's a valid TabMaster backup.");
+        console.error(err);
+      }
+    };
+    reader.readAsText(file);
   });
 
   // Toggle Icon Input Type
@@ -144,6 +237,9 @@ document.addEventListener('DOMContentLoaded', () => {
           'exact': 'Exactly'
         };
 
+        const isLocalOnly = isSyncEnabled && rule.actionIconType === 'image';
+        const syncBadge = isLocalOnly ? `<span class="url-match" style="color: #ff9800; border-color: #ff9800; font-size: 0.7rem; margin-left:8px;">⚠️ Local Only</span>` : '';
+
         li.innerHTML = `
           <div class="rule-info">
             <div class="rule-icon-preview">
@@ -151,7 +247,10 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <div class="rule-details">
               <h4>${titleSnippet}</h4>
-              <span class="url-match">${conditionMap[rule.conditionType]}: ${rule.conditionValue}</span>
+              <div>
+                <span class="url-match">${conditionMap[rule.conditionType]}: ${rule.conditionValue}</span>
+                ${syncBadge}
+              </div>
             </div>
           </div>
           <div class="rule-actions">
