@@ -71,9 +71,10 @@
               <h3>Data Management</h3>
               <p>Backup or restore your TabMaster rules (JSON).</p>
             </div>
-            <div class="setting-actions">
+            <div class="setting-actions" style="display: flex; gap: 8px;">
               <button id="exportBtn" class="btn-secondary">📤 Export Backup</button>
-              <button id="importBtn" class="btn-secondary">📥 Import Backup</button>
+              <button id="importMergeBtn" class="btn-secondary">📥 Import (Merge)</button>
+              <button id="importOverwriteBtn" class="btn-secondary" style="color: #ff4d4f; border-color: #ff4d4f;">📥 Import (Overwrite)</button>
               <input type="file" id="importFileInput" accept=".json" style="display: none;">
             </div>
           </div>

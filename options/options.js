@@ -30,13 +30,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const generalSection = document.getElementById('generalSection');
   const syncToggle = document.getElementById('syncToggle');
   const exportBtn = document.getElementById('exportBtn');
-  const importBtn = document.getElementById('importBtn');
+  const importMergeBtn = document.getElementById('importMergeBtn');
+  const importOverwriteBtn = document.getElementById('importOverwriteBtn');
   const importFileInput = document.getElementById('importFileInput');
 
   let currentRules = [];
   let editingRuleId = null;
   let currentImageBase64 = '';
   let isSyncEnabled = false;
+  let importMode = 'merge';
 
   // Initialization
   loadRules();
@@ -85,8 +87,27 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Sync Toggle
-  syncToggle.addEventListener('change', (e) => {
+  syncToggle.addEventListener('change', async (e) => {
     isSyncEnabled = e.target.checked;
+    
+    // Prompt user to convert Image rules to Emoji rules when enabling sync
+    if (isSyncEnabled) {
+      let modified = false;
+      for (const rule of currentRules) {
+        if (rule.actionIconType === 'image') {
+          const ans = prompt(`The rule for "${rule.conditionValue}" uses a custom image, which cannot be synced.\n\nEnter a fallback emoji to replace the image so it can be synced, or leave blank to keep it as a local-only image:`);
+          if (ans && ans.trim() !== '') {
+            rule.actionIconType = 'emoji';
+            rule.actionIconValue = ans.trim();
+            modified = true;
+          }
+        }
+      }
+      if (modified) {
+        await new Promise(r => chrome.storage.local.set({ rules: currentRules }, r));
+      }
+    }
+
     chrome.storage.local.set({ syncEnabled: isSyncEnabled }, () => {
       if (isSyncEnabled) {
         chrome.runtime.sendMessage({ type: 'FORCE_SYNC_PUSH' });
@@ -107,8 +128,16 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Import
-  importBtn.addEventListener('click', () => {
+  importMergeBtn.addEventListener('click', () => {
+    importMode = 'merge';
     importFileInput.click();
+  });
+
+  importOverwriteBtn.addEventListener('click', () => {
+    if(confirm("Are you sure? This will delete all your current rules and replace them with the backup file.")) {
+      importMode = 'overwrite';
+      importFileInput.click();
+    }
   });
 
   importFileInput.addEventListener('change', (e) => {
@@ -121,11 +150,27 @@ document.addEventListener('DOMContentLoaded', () => {
         const importedRules = JSON.parse(event.target.result);
         if (!Array.isArray(importedRules)) throw new Error("Invalid format");
         
-        // Overwrite rules
-        currentRules = importedRules;
+        if (importMode === 'overwrite') {
+          currentRules = importedRules;
+        } else {
+          // Merge mode
+          const mergedDict = {};
+          // Load existing rules into dictionary
+          currentRules.forEach(r => mergedDict[r.conditionType + '_' + r.conditionValue] = r);
+          // Overwrite/merge imported rules
+          importedRules.forEach(r => {
+            const key = r.conditionType + '_' + r.conditionValue;
+            if (mergedDict[key]) {
+              r.id = mergedDict[key].id; // Keep original ID if condition is duplicate
+            }
+            mergedDict[key] = r;
+          });
+          currentRules = Object.values(mergedDict);
+        }
+
         chrome.storage.local.set({ rules: currentRules }, () => {
           renderRules();
-          alert("Rules imported successfully!");
+          alert(importMode === 'overwrite' ? "Rules overwritten fully!" : "Rules merged and duplicates removed!");
           importFileInput.value = ''; // reset
         });
 
