@@ -144,10 +144,12 @@ chrome.tabs.onRemoved.addListener((tabId) => {
 
 // Setup tab right-click context menu
 chrome.runtime.onInstalled.addListener(() => {
-  chrome.contextMenus.create({
-    id: "customize-tab",
-    title: "Tab anpassen (Rename / Icon)...",
-    contexts: ["tab"]
+  chrome.contextMenus.removeAll(() => {
+    chrome.contextMenus.create({
+      id: "customize-tab",
+      title: "Tab anpassen (Rename / Icon)...",
+      contexts: ["tab"]
+    });
   });
 });
 
