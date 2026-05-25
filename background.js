@@ -142,19 +142,35 @@ chrome.tabs.onRemoved.addListener((tabId) => {
   });
 });
 
-// Setup tab right-click context menu
+// Setup tab and page right-click context menus
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.removeAll(() => {
+    // 1. Page context menu (always supported on all versions)
     chrome.contextMenus.create({
-      id: "customize-tab",
+      id: "customize-tab-page",
       title: "Tab anpassen (Rename / Icon)...",
-      contexts: ["tab"]
+      contexts: ["page"]
     });
+
+    // 2. Tab context menu (supported in newer browser versions)
+    try {
+      chrome.contextMenus.create({
+        id: "customize-tab",
+        title: "Tab anpassen (Rename / Icon)...",
+        contexts: ["tab"]
+      }, () => {
+        if (chrome.runtime.lastError) {
+          console.log("Tab context menu registration error (ignoring):", chrome.runtime.lastError.message);
+        }
+      });
+    } catch (e) {
+      console.log("Tab context menu not supported by this browser version (ignoring):", e.message);
+    }
   });
 });
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
-  if (info.menuItemId === "customize-tab") {
+  if (info.menuItemId === "customize-tab" || info.menuItemId === "customize-tab-page") {
     chrome.tabs.sendMessage(tab.id, {
       type: "OPEN_CUSTOMIZER_MODAL",
       tabId: tab.id,
