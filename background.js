@@ -56,17 +56,112 @@ chrome.storage.onChanged.addListener(async (changes, namespace) => {
   }
 });
 
-// Listener for manual push triggers from UI (e.g. toggling sync ON)
-chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
+// Listener for manual push triggers from UI and tab customization options
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'FORCE_SYNC_PUSH') {
-    try {
-      const { rules } = await chrome.storage.local.get(['rules']);
-      const syncableRules = (rules || []).filter(r => r.actionIconType !== 'image');
-      await chrome.storage.sync.set({ rules: syncableRules });
-      sendResponse({ success: true });
-    } catch (e) {
-      sendResponse({ success: false, error: e.message });
-    }
+    (async () => {
+      try {
+        const { rules } = await chrome.storage.local.get(['rules']);
+        const syncableRules = (rules || []).filter(r => r.actionIconType !== 'image');
+        await chrome.storage.sync.set({ rules: syncableRules });
+        sendResponse({ success: true });
+      } catch (e) {
+        sendResponse({ success: false, error: e.message });
+      }
+    })();
     return true; // Keep message channel open for async
+  }
+
+  if (message.type === 'GET_TAB_RULE') {
+    const tabId = sender.tab ? sender.tab.id : null;
+    if (!tabId) {
+      sendResponse({ rule: null });
+      return false;
+    }
+    chrome.storage.local.get(['tempTabRules'], (result) => {
+      const tempTabRules = result.tempTabRules || {};
+      sendResponse({ rule: tempTabRules[tabId] || null });
+    });
+    return true; // Keep channel open for async
+  }
+
+  if (message.type === 'SET_TEMP_RULE') {
+    const tabId = sender.tab ? sender.tab.id : message.tabId;
+    if (!tabId) {
+      sendResponse({ success: false });
+      return false;
+    }
+    chrome.storage.local.get(['tempTabRules'], (result) => {
+      const tempTabRules = result.tempTabRules || {};
+      tempTabRules[tabId] = message.rule;
+      chrome.storage.local.set({ tempTabRules }, () => {
+        // Notify tab to update
+        chrome.tabs.sendMessage(tabId, { type: 'REFRESH_RULES' }, () => {
+          if (chrome.runtime.lastError) {
+            // Tab might not have content script running or be closed
+          }
+        });
+        sendResponse({ success: true });
+      });
+    });
+    return true; // Keep channel open for async
+  }
+
+  if (message.type === 'CLEAR_TEMP_RULE') {
+    const tabId = sender.tab ? sender.tab.id : message.tabId;
+    if (!tabId) {
+      sendResponse({ success: false });
+      return false;
+    }
+    chrome.storage.local.get(['tempTabRules'], (result) => {
+      const tempTabRules = result.tempTabRules || {};
+      if (tempTabRules[tabId]) {
+        delete tempTabRules[tabId];
+        chrome.storage.local.set({ tempTabRules }, () => {
+          chrome.tabs.sendMessage(tabId, { type: 'REFRESH_RULES' }, () => {
+            if (chrome.runtime.lastError) {}
+          });
+          sendResponse({ success: true });
+        });
+      } else {
+        sendResponse({ success: true });
+      }
+    });
+    return true; // Keep channel open for async
+  }
+});
+
+// Clean up temporary rules when tabs are closed
+chrome.tabs.onRemoved.addListener((tabId) => {
+  chrome.storage.local.get(['tempTabRules'], (result) => {
+    const tempTabRules = result.tempTabRules || {};
+    if (tempTabRules[tabId]) {
+      delete tempTabRules[tabId];
+      chrome.storage.local.set({ tempTabRules });
+    }
+  });
+});
+
+// Setup tab right-click context menu
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.contextMenus.create({
+    id: "customize-tab",
+    title: "Tab anpassen (Rename / Icon)...",
+    contexts: ["tab"]
+  });
+});
+
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+  if (info.menuItemId === "customize-tab") {
+    chrome.tabs.sendMessage(tab.id, {
+      type: "OPEN_CUSTOMIZER_MODAL",
+      tabId: tab.id,
+      url: tab.url,
+      title: tab.title
+    }, (response) => {
+      if (chrome.runtime.lastError) {
+        console.warn("Could not open customizer modal (expected on non-content script tabs):", chrome.runtime.lastError.message);
+      }
+    });
   }
 });
