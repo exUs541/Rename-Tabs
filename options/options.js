@@ -46,6 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
   chrome.storage.local.get(['syncEnabled'], (res) => {
     isSyncEnabled = !!res.syncEnabled;
     syncToggle.checked = isSyncEnabled;
+    renderRules(); // the "this device only" badges depend on this setting
   });
 
   // Listen for background updates
@@ -261,17 +262,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const li = document.createElement('li');
         li.className = 'rule-item';
         
-        // Build preview icon
+        // Build preview icon. Rule values can come from an imported backup, so
+        // they are escaped before being placed in markup.
         let iconHtml = '';
         if (rule.actionIconType === 'emoji') {
-          iconHtml = rule.actionIconValue || '📄';
+          iconHtml = escapeHtml(rule.actionIconValue || '📄');
         } else if (rule.actionIconType === 'image') {
-          iconHtml = `<img src="${rule.actionIconValue}" alt="Icon">`;
+          iconHtml = `<img src="${escapeHtml(rule.actionIconValue)}" alt="">`;
         }
 
         // Build Title snippet
-        const titleSnippet = rule.actionTitle 
-          ? `Change name to: <strong>${rule.actionTitle}</strong>` 
+        const titleSnippet = rule.actionTitle
+          ? `Rename to <strong>${escapeHtml(rule.actionTitle)}</strong>`
           : `Keep original name`;
 
         const conditionMap = {
@@ -283,7 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         const isLocalOnly = isSyncEnabled && rule.actionIconType === 'image';
-        const syncBadge = isLocalOnly ? `<span class="url-match" style="color: #ff9800; border-color: #ff9800; font-size: 0.7rem; margin-left:8px;">⚠️ Local Only</span>` : '';
+        const syncBadge = isLocalOnly ? `<span class="badge-warn" title="Custom images are not synced">This device only</span>` : '';
 
         li.innerHTML = `
           <div class="rule-info">
@@ -293,14 +295,18 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="rule-details">
               <h4>${titleSnippet}</h4>
               <div>
-                <span class="url-match">${conditionMap[rule.conditionType]}: ${rule.conditionValue}</span>
+                <span class="url-match" title="${escapeHtml(rule.conditionValue)}">${escapeHtml(conditionMap[rule.conditionType] || rule.conditionType)}: ${escapeHtml(rule.conditionValue)}</span>
                 ${syncBadge}
               </div>
             </div>
           </div>
           <div class="rule-actions">
-            <button class="btn-icon edit-btn" title="Edit">✎</button>
-            <button class="btn-icon danger delete-btn" title="Delete">🗑</button>
+            <button class="btn-icon edit-btn" title="Edit rule" aria-label="Edit rule">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 13.5l.6-3 7.8-7.8a1.4 1.4 0 012 2L5.1 12.5l-2.6 1z"/></svg>
+            </button>
+            <button class="btn-icon danger delete-btn" title="Delete rule" aria-label="Delete rule">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4h11M6 4V2.5h4V4M4 4l.6 9.5h6.8L12 4M6.5 7v4M9.5 7v4"/></svg>
+            </button>
           </div>
         `;
 
@@ -337,7 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
         imageInputGroup.classList.remove('hidden');
       }
     } else {
-      modalTitle.textContent = 'Create New Rule';
+      modalTitle.textContent = 'New rule';
       editingRuleId = null;
       radioIconEmoji.checked = true;
       emojiInputGroup.classList.remove('hidden');
@@ -379,7 +385,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     chrome.storage.local.set({ rules: currentRules }, () => {
       if (chrome.runtime.lastError) {
-        alert("Speicherfehler: " + chrome.runtime.lastError.message + "\nVermutlich ist der interne Speicher voll.");
+        alert("Could not save the rule: " + chrome.runtime.lastError.message + "\nThe browser storage may be full. Try a smaller image.");
         return;
       }
       renderRules();
@@ -403,6 +409,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function generateId() {
     return Math.random().toString(36).substr(2, 9);
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
 });

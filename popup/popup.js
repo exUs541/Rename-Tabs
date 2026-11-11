@@ -57,7 +57,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (suggestions.length > 0) {
       document.querySelector('.input-row').style.marginBottom = "4px";
       suggestions.forEach(s => {
-        const chip = document.createElement('span');
+        const chip = document.createElement('button');
+        chip.type = 'button';
         chip.className = 'suggestion-chip';
         chip.textContent = s;
         chip.title = s; // for tooltip
@@ -115,8 +116,8 @@ document.addEventListener('DOMContentLoaded', () => {
             actionEmoji.value = matchedRule.actionIconValue || '';
           }
           
-          saveRuleBtn.textContent = "Update Existing Rule";
-          descText.textContent = "A rule already applies to this tab. You can update it below.";
+          saveRuleBtn.textContent = "Update rule";
+          descText.textContent = "A rule already applies to this tab. Change it below.";
         } else {
           // No rule exists - default to exact match of current URL
           conditionType.value = 'exact';
@@ -173,7 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
       
       chrome.storage.local.set({ rules }, () => {
         quickAddForm.classList.add('hidden');
-        successMessage.textContent = editingRuleId ? "✅ Rule updated successfully!" : "✅ Rule saved successfully!";
+        successMessage.textContent = editingRuleId ? "Rule updated" : "Rule saved";
         successMessage.classList.remove('hidden');
         
         setTimeout(() => {
