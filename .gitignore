@@ -1,7 +1,4 @@
-# Web Store specific assets
-pictures/
-promo/
-screenshots/
+# Built store packages
 *.zip
 
 # OS generated files
