@@ -309,11 +309,9 @@ function drawModal(matchedRule, matchedScope, currentTitle, currentUrl) {
   
   const style = document.createElement('style');
   style.textContent = `
-    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
-
     :host {
       all: initial;
-      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
 
     .overlay {
@@ -561,6 +559,14 @@ function drawModal(matchedRule, matchedScope, currentTitle, currentUrl) {
       border-color: rgba(99, 102, 241, 0.2);
     }
 
+    /* ".form-group label" is more specific than ".radio-label", so these rows need their own reset */
+    .form-group label.radio-label {
+      display: flex;
+      margin-bottom: 0;
+      text-transform: none;
+      letter-spacing: normal;
+    }
+
     .radio-label input[type="radio"] {
       accent-color: #6366f1;
       margin-top: 3px;
@@ -670,27 +676,27 @@ function drawModal(matchedRule, matchedScope, currentTitle, currentUrl) {
   container.innerHTML = `
     <div class="modal">
       <div class="modal-header">
-        <h2>Tab anpassen 🚀</h2>
-        <button class="btn-close" id="closeBtn">&times;</button>
+        <h2>Customize tab 🚀</h2>
+        <button class="btn-close" id="closeBtn" aria-label="Close">&times;</button>
       </div>
       
       <div class="modal-body">
         <div class="form-group">
-          <label>Tab-Name (Titel)</label>
-          <input type="text" id="tabTitleInput" placeholder="Name des Tabs eingeben..." value="${prefilledTitle}">
+          <label>Tab name</label>
+          <input type="text" id="tabTitleInput" placeholder="Enter a tab name..." value="${prefilledTitle}">
         </div>
         
         <div class="form-group">
-          <label>Tab-Icon (Favicon)</label>
+          <label>Tab icon</label>
           <div class="tab-type-selector">
             <button class="tab-btn ${prefilledIconType === 'emoji' ? 'active' : ''}" id="emojiTabBtn">Emoji</button>
-            <button class="tab-btn ${prefilledIconType === 'image' ? 'active' : ''}" id="imageTabBtn">Custom Image</button>
+            <button class="tab-btn ${prefilledIconType === 'image' ? 'active' : ''}" id="imageTabBtn">Custom image</button>
           </div>
           
           <!-- Emoji Section -->
           <div id="emojiSection" class="section-content ${prefilledIconType === 'emoji' ? '' : 'hidden'}">
             <div class="emoji-picker-container">
-              <input type="text" id="emojiInput" placeholder="Emoji eingeben (z. B. 🔥)" value="${prefilledIconType === 'emoji' ? prefilledIconValue : ''}" maxlength="5">
+              <input type="text" id="emojiInput" placeholder="Enter an emoji, e.g. 🔥" value="${prefilledIconType === 'emoji' ? prefilledIconValue : ''}" maxlength="5">
               <div class="quick-emojis">
                 <span class="quick-emoji ${prefilledIconType === 'emoji' && prefilledIconValue === '🚀' ? 'selected' : ''}">🚀</span>
                 <span class="quick-emoji ${prefilledIconType === 'emoji' && prefilledIconValue === '🔥' ? 'selected' : ''}">🔥</span>
@@ -711,34 +717,34 @@ function drawModal(matchedRule, matchedScope, currentTitle, currentUrl) {
             <div class="file-picker-container">
               <input type="file" id="imageFileInput" accept="image/png, image/jpeg, image/x-icon, image/svg+xml">
               <div id="modalImagePreview" class="image-preview">
-                ${prefilledIconType === 'image' && prefilledIconValue ? `<img src="${prefilledIconValue}" style="width:100%; height:100%; object-fit:contain;">` : '<span class="preview-placeholder">Kein Bild</span>'}
+                ${prefilledIconType === 'image' && prefilledIconValue ? `<img src="${prefilledIconValue}" style="width:100%; height:100%; object-fit:contain;">` : '<span class="preview-placeholder">No image</span>'}
               </div>
             </div>
           </div>
         </div>
         
         <div class="form-group">
-          <label>Regel-Typ (Gültigkeit)</label>
+          <label>Apply to</label>
           <div class="rule-options">
             <label class="radio-label">
               <input type="radio" name="ruleScope" value="temporary" ${matchedScope === 'temporary' ? 'checked' : ''}>
               <div class="radio-custom-content">
-                <strong>Nur für diesen Tab (Temporär)</strong>
-                <span>Wird beim Schließen des Tabs gelöscht</span>
+                <strong>This tab only (temporary)</strong>
+                <span>Removed when the tab is closed</span>
               </div>
             </label>
             <label class="radio-label">
               <input type="radio" name="ruleScope" value="exact" ${matchedScope === 'exact' ? 'checked' : ''}>
               <div class="radio-custom-content">
-                <strong>Für diese genaue URL (Dauerhaft)</strong>
-                <span>Gilt immer auf dieser spezifischen URL</span>
+                <strong>This exact page (permanent)</strong>
+                <span>Always applies to this exact address</span>
               </div>
             </label>
             <label class="radio-label">
               <input type="radio" name="ruleScope" value="domain" ${matchedScope === 'domain' ? 'checked' : ''}>
               <div class="radio-custom-content">
-                <strong>Für die gesamte Website (Dauerhaft)</strong>
-                <span>Gilt für alle Seiten von ${hostname}</span>
+                <strong>The whole website (permanent)</strong>
+                <span>Applies to all pages of ${hostname}</span>
               </div>
             </label>
           </div>
@@ -746,10 +752,10 @@ function drawModal(matchedRule, matchedScope, currentTitle, currentUrl) {
       </div>
       
       <div class="modal-footer">
-        <button class="btn btn-secondary" id="resetBtn">Zurücksetzen</button>
+        <button class="btn btn-secondary" id="resetBtn">Reset</button>
         <div style="display: flex; gap: 10px;">
-          <button class="btn btn-muted" id="cancelBtn">Abbrechen</button>
-          <button class="btn btn-primary" id="saveBtn">Speichern</button>
+          <button class="btn btn-muted" id="cancelBtn">Cancel</button>
+          <button class="btn btn-primary" id="saveBtn">Save</button>
         </div>
       </div>
     </div>

@@ -148,7 +148,7 @@ function createMenus() {
     // 1. Page context menu (always supported on all versions)
     chrome.contextMenus.create({
       id: "customize-tab-page",
-      title: "Tab anpassen (Rename / Icon)...",
+      title: "Rename tab / change icon...",
       contexts: ["page"]
     });
 
@@ -156,7 +156,7 @@ function createMenus() {
     try {
       chrome.contextMenus.create({
         id: "customize-tab",
-        title: "Tab anpassen (Rename / Icon)...",
+        title: "Rename tab / change icon...",
         contexts: ["tab"]
       }, () => {
         if (chrome.runtime.lastError) {
