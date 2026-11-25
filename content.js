@@ -1,6 +1,10 @@
 let originalTitle = '';
 let originalIconHref = '';
 
+// Master switch (popup toggle). While false, no rule is applied and the tab keeps its own
+// title and icon. Read before the first rule check, then kept in sync via storage.onChanged.
+let extensionEnabled = true;
+
 // Capture original title and icon as fallback
 function captureOriginalState() {
   if (!originalTitle && document.title) {
@@ -156,6 +160,10 @@ function applyRule(rule) {
 }
 
 function checkRules() {
+  if (!extensionEnabled) {
+    resetToOriginal();
+    return;
+  }
   chrome.runtime.sendMessage({ type: 'GET_TAB_RULE' }, (response) => {
     if (chrome.runtime.lastError) {
       checkPermanentRules();
@@ -201,7 +209,10 @@ function checkPermanentRules() {
 }
 
 // Observe dynamic SPA transitions
-checkRules();
+chrome.storage.local.get(['extensionEnabled'], (stored) => {
+  extensionEnabled = stored.extensionEnabled !== false;
+  checkRules();
+});
 let lastUrl = location.href;
 new MutationObserver(() => {
   const url = location.href;
@@ -213,7 +224,9 @@ new MutationObserver(() => {
 
 // Listen for updates from options page, background context menu, or sync triggers
 chrome.storage.onChanged.addListener((changes, namespace) => {
-  if (namespace === 'local' && (changes.rules || changes.tempTabRules)) {
+  if (namespace !== 'local') return;
+  if (changes.extensionEnabled) extensionEnabled = changes.extensionEnabled.newValue !== false;
+  if (changes.rules || changes.tempTabRules || changes.extensionEnabled) {
     checkRules();
   }
 });
@@ -221,6 +234,10 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
 // Receive message triggers from background context menu
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'OPEN_CUSTOMIZER_MODAL') {
+    if (!extensionEnabled) {
+      sendResponse({ success: false });
+      return;
+    }
     showCustomizerModal(message.title, message.url);
     sendResponse({ success: true });
   } else if (message.type === 'REFRESH_RULES') {

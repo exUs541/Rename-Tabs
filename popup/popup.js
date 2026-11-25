@@ -10,6 +10,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const saveRuleBtn = document.getElementById('saveRuleBtn');
   const descText = document.querySelector('.description');
 
+  // Master switch: while it is off Tab Master leaves every tab title and icon alone.
+  const masterToggle = document.getElementById('masterToggle');
+  const offNote = document.getElementById('offNote');
+  const mainContent = document.getElementById('mainContent');
+  function renderEnabled(on) {
+    masterToggle.checked = on;
+    document.body.classList.toggle('ext-off', !on);
+    offNote.classList.toggle('hidden', on);
+    mainContent.inert = !on;
+  }
+  chrome.storage.local.get(['extensionEnabled'], (stored) => renderEnabled(stored.extensionEnabled !== false));
+  masterToggle.addEventListener('change', () => chrome.storage.local.set({ extensionEnabled: masterToggle.checked }));
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === 'local' && changes.extensionEnabled) renderEnabled(changes.extensionEnabled.newValue !== false);
+  });
+
   let editingRuleId = null;
   let originalMatchedRule = null;
   let currentActiveUrl = '';

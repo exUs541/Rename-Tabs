@@ -129,4 +129,30 @@ input[type="text"]:focus, select:focus { outline: none; border-color: var(--acce
   text-align: center;
 }
 
+/* Master switch */
+.header-actions { display: flex; align-items: center; gap: 8px; }
+.switch { position: relative; display: inline-block; flex-shrink: 0; width: 36px; height: 20px; cursor: pointer; }
+.switch input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.slider { position: absolute; inset: 0; border-radius: 999px; background: var(--border); transition: background .15s ease; }
+.slider::before {
+  content: "";
+  position: absolute; top: 3px; left: 3px;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform .15s ease;
+}
+.switch input:checked + .slider { background: var(--accent); }
+.switch input:checked + .slider::before { transform: translateX(16px); }
+.switch:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 999px; }
+
+.off-note {
+  margin-bottom: 14px;
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--muted);
+}
+body.ext-off .content { opacity: .45; }
+
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
