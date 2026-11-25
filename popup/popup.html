@@ -3,59 +3,65 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tab Master - Quick Add</title>
+  <title>Tab Master</title>
   <link rel="stylesheet" href="popup.css">
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <div class="header-title">
-        <span class="icon">🚀</span>
-        <h1>Tab Master</h1>
-      </div>
-      <button id="openSettingsBtn" class="btn-icon" title="Manage Rules">⚙️</button>
+  <header class="header">
+    <div class="brand">
+      <img src="../icons/icon48.png" alt="" width="24" height="24">
+      <h1>Tab Master</h1>
     </div>
-    
-    <div class="content">
-      <p class="description">Quickly create a rule for this tab.</p>
-      
-      <form id="quickAddForm" class="quick-form">
-        <div class="form-group">
-          <label>Condition</label>
-          <div class="input-row">
-            <select id="conditionType">
-              <option value="startsWith">Starts with</option>
-              <option value="endsWith">Ends with</option>
-              <option value="contains">Contains</option>
-              <option value="exact">Is exactly</option>
-            </select>
-            <input type="text" id="conditionValue" required>
-          </div>
-          <div id="suggestions" class="suggestions-container hidden"></div>
-        </div>
-
-        <div class="form-group">
-          <label>New Tab Name</label>
-          <input type="text" id="actionTitle" placeholder="Leave blank to keep original">
-        </div>
-
-        <div class="form-group">
-          <label>New Icon (Emoji)</label>
-          <input type="text" id="actionEmoji" placeholder="e.g. 💻" maxlength="5">
-          <small class="hint">Use Dashboard for custom image uploads</small>
-        </div>
-
-        <button type="submit" id="saveRuleBtn" class="primary-btn">
-          Save Quick Rule
-        </button>
-      </form>
-      
-      <div id="successMessage" class="success-message hidden">
-        ✅ Rule saved successfully!
-      </div>
+    <div class="header-actions">
+      <label class="switch" title="Turn Tab Master on or off">
+        <input type="checkbox" id="masterToggle" role="switch" aria-label="Turn Tab Master on or off" checked>
+        <span class="slider" aria-hidden="true"></span>
+      </label>
+      <button id="openSettingsBtn" class="btn-icon" title="Manage all rules" aria-label="Manage all rules">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="8" cy="8" r="2.2"/>
+          <path d="M8 1.5v1.6M8 12.9v1.6M1.5 8h1.6M12.9 8h1.6M3.4 3.4l1.1 1.1M11.5 11.5l1.1 1.1M3.4 12.6l1.1-1.1M11.5 4.5l1.1-1.1"/>
+        </svg>
+      </button>
     </div>
-  </div>
+  </header>
+
+  <p id="offNote" class="off-note hidden" role="status">Tab Master is off. Your tabs keep their original names and icons.</p>
+
+  <main class="content" id="mainContent">
+    <p class="description">Rename this tab and give it its own icon.</p>
+
+    <form id="quickAddForm" class="quick-form">
+      <div class="form-group">
+        <label for="conditionType">When the address</label>
+        <div class="input-row">
+          <select id="conditionType">
+            <option value="startsWith">starts with</option>
+            <option value="endsWith">ends with</option>
+            <option value="contains">contains</option>
+            <option value="exact">is exactly</option>
+          </select>
+          <input type="text" id="conditionValue" required aria-label="Address text" spellcheck="false">
+        </div>
+        <div id="suggestions" class="suggestions-container hidden"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="actionTitle">Tab name</label>
+        <input type="text" id="actionTitle" placeholder="Keep original name">
+      </div>
+
+      <div class="form-group">
+        <label for="actionEmoji">Icon (emoji)</label>
+        <input type="text" id="actionEmoji" placeholder="e.g. 💻" maxlength="5">
+        <small class="hint">For your own image, open the dashboard.</small>
+      </div>
+
+      <button type="submit" id="saveRuleBtn" class="primary-btn">Save rule</button>
+    </form>
+
+    <div id="successMessage" class="success-message hidden" role="status">Rule saved</div>
+  </main>
   <script src="popup.js"></script>
 </body>
 </html>

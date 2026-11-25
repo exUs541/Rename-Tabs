@@ -143,12 +143,12 @@ chrome.tabs.onRemoved.addListener((tabId) => {
 });
 
 // Setup tab and page right-click context menus
-chrome.runtime.onInstalled.addListener(() => {
+function createMenus() {
   chrome.contextMenus.removeAll(() => {
     // 1. Page context menu (always supported on all versions)
     chrome.contextMenus.create({
       id: "customize-tab-page",
-      title: "Tab anpassen (Rename / Icon)...",
+      title: "Rename tab / change icon...",
       contexts: ["page"]
     });
 
@@ -156,7 +156,7 @@ chrome.runtime.onInstalled.addListener(() => {
     try {
       chrome.contextMenus.create({
         id: "customize-tab",
-        title: "Tab anpassen (Rename / Icon)...",
+        title: "Rename tab / change icon...",
         contexts: ["tab"]
       }, () => {
         if (chrome.runtime.lastError) {
@@ -167,6 +167,30 @@ chrome.runtime.onInstalled.addListener(() => {
       console.log("Tab context menu not supported by this browser version (ignoring):", e.message);
     }
   });
+}
+
+// ── Master switch ─────────────────────────────────────────────────────────────
+// `extensionEnabled` (chrome.storage.local, on by default) is flipped from the popup.
+// While it is off the right-click entries are removed and the toolbar badge shows OFF;
+// content.js puts every tab's original title and icon back.
+function applyEnabledState(enabled) {
+  chrome.action.setBadgeText({ text: enabled ? '' : 'OFF' });
+  if (!enabled) chrome.action.setBadgeBackgroundColor({ color: '#6b7280' });
+  if (enabled) createMenus();
+  else chrome.contextMenus.removeAll();
+}
+
+async function readEnabled() {
+  const { extensionEnabled } = await chrome.storage.local.get('extensionEnabled');
+  return extensionEnabled !== false;
+}
+
+chrome.runtime.onInstalled.addListener(async () => applyEnabledState(await readEnabled()));
+chrome.runtime.onStartup.addListener(async () => applyEnabledState(await readEnabled()));
+chrome.storage.onChanged.addListener((changes, namespace) => {
+  if (namespace === 'local' && changes.extensionEnabled) {
+    applyEnabledState(changes.extensionEnabled.newValue !== false);
+  }
 });
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {

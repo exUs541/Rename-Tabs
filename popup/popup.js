@@ -10,6 +10,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const saveRuleBtn = document.getElementById('saveRuleBtn');
   const descText = document.querySelector('.description');
 
+  // Master switch: while it is off Tab Master leaves every tab title and icon alone.
+  const masterToggle = document.getElementById('masterToggle');
+  const offNote = document.getElementById('offNote');
+  const mainContent = document.getElementById('mainContent');
+  function renderEnabled(on) {
+    masterToggle.checked = on;
+    document.body.classList.toggle('ext-off', !on);
+    offNote.classList.toggle('hidden', on);
+    mainContent.inert = !on;
+  }
+  chrome.storage.local.get(['extensionEnabled'], (stored) => renderEnabled(stored.extensionEnabled !== false));
+  masterToggle.addEventListener('change', () => chrome.storage.local.set({ extensionEnabled: masterToggle.checked }));
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === 'local' && changes.extensionEnabled) renderEnabled(changes.extensionEnabled.newValue !== false);
+  });
+
   let editingRuleId = null;
   let originalMatchedRule = null;
   let currentActiveUrl = '';
@@ -57,7 +73,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (suggestions.length > 0) {
       document.querySelector('.input-row').style.marginBottom = "4px";
       suggestions.forEach(s => {
-        const chip = document.createElement('span');
+        const chip = document.createElement('button');
+        chip.type = 'button';
         chip.className = 'suggestion-chip';
         chip.textContent = s;
         chip.title = s; // for tooltip
@@ -115,8 +132,8 @@ document.addEventListener('DOMContentLoaded', () => {
             actionEmoji.value = matchedRule.actionIconValue || '';
           }
           
-          saveRuleBtn.textContent = "Update Existing Rule";
-          descText.textContent = "A rule already applies to this tab. You can update it below.";
+          saveRuleBtn.textContent = "Update rule";
+          descText.textContent = "A rule already applies to this tab. Change it below.";
         } else {
           // No rule exists - default to exact match of current URL
           conditionType.value = 'exact';
@@ -173,7 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
       
       chrome.storage.local.set({ rules }, () => {
         quickAddForm.classList.add('hidden');
-        successMessage.textContent = editingRuleId ? "✅ Rule updated successfully!" : "✅ Rule saved successfully!";
+        successMessage.textContent = editingRuleId ? "Rule updated" : "Rule saved";
         successMessage.classList.remove('hidden');
         
         setTimeout(() => {

@@ -3,136 +3,130 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tab Master - Dashboard</title>
+  <title>Tab Master</title>
   <link rel="stylesheet" href="options.css">
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div class="app-container">
-    
-    <aside class="sidebar">
+  <header class="topbar">
+    <div class="topbar-inner">
       <div class="logo">
-        <span class="logo-emoji">🚀</span>
+        <img src="../icons/icon48.png" alt="" width="28" height="28">
         <h2>Tab Master</h2>
       </div>
-      <nav>
-        <a href="#" class="nav-item active" id="navRules">
-          <span class="nav-icon">📋</span> Rules
-        </a>
-        <a href="#" class="nav-item" id="navGeneral">
-          <span class="nav-icon">⚙️</span> General
-        </a>
+      <nav class="nav" aria-label="Sections">
+        <a href="#" class="nav-item active" id="navRules">Rules</a>
+        <a href="#" class="nav-item" id="navGeneral">Settings</a>
       </nav>
-      <div class="sidebar-footer">
-        <p>Made for productivity</p>
-      </div>
-    </aside>
+    </div>
+  </header>
 
-    <main class="content">
-      <div id="rulesSection">
-        <header class="top-header">
-          <h1>Tab Rules</h1>
-          <button id="addRuleBtn" class="btn-primary">
-            <span>+</span> Create New Rule
-          </button>
-        </header>
+  <main class="content">
+    <div id="rulesSection">
+      <header class="top-header">
+        <div>
+          <h1>Rules</h1>
+          <p class="lead">Rename tabs and change their icons whenever the address matches.</p>
+        </div>
+        <button id="addRuleBtn" class="btn-primary">New rule</button>
+      </header>
 
-        <section class="rules-list-container">
-          <ul id="rulesList" class="rules-list">
-            <!-- Rules will be dynamically injected here -->
-          </ul>
-          <div id="emptyState" class="empty-state hidden">
-            <div class="empty-icon">📭</div>
-            <h3>No rules yet</h3>
-            <p>Create a rule to start customizing your tabs!</p>
+      <section class="rules-list-container">
+        <ul id="rulesList" class="rules-list">
+          <!-- Rules will be dynamically injected here -->
+        </ul>
+        <div id="emptyState" class="empty-state hidden">
+          <h3>No rules yet</h3>
+          <p>Create a rule to rename a tab or change its icon.</p>
+        </div>
+      </section>
+    </div>
+
+    <div id="generalSection" class="hidden">
+      <header class="top-header">
+        <div>
+          <h1>Settings</h1>
+        </div>
+      </header>
+
+      <section class="settings-container">
+        <div class="settings-card">
+          <div class="setting-info">
+            <h3>Sync across devices</h3>
+            <p>Keeps text and emoji rules in sync through your browser account. Custom images cannot be synced and stay on this device.</p>
           </div>
-        </section>
-      </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="syncToggle" role="switch" aria-label="Sync across devices">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
 
-      <div id="generalSection" class="hidden">
-        <header class="top-header">
-          <h1>General Settings</h1>
-        </header>
-
-        <section class="settings-container">
-          <div class="settings-card">
-            <div class="setting-info">
-              <h3>Sync Across Devices</h3>
-              <p>Keep your text & emoji rules in sync. <em>(Custom images cannot be synced and will remain local)</em>.</p>
-            </div>
-            <label class="toggle-switch">
-              <input type="checkbox" id="syncToggle">
-              <span class="toggle-slider"></span>
-            </label>
+        <div class="settings-card stacked">
+          <div class="setting-info">
+            <h3>Backup</h3>
+            <p>Export your rules as a JSON file, or restore them from one.</p>
           </div>
-
-          <div class="settings-card">
-            <div class="setting-info">
-              <h3>Data Management</h3>
-              <p>Backup or restore your TabMaster rules (JSON).</p>
-            </div>
-            <div class="setting-actions" style="display: flex; gap: 8px;">
-              <button id="exportBtn" class="btn-secondary">📤 Export Backup</button>
-              <button id="importMergeBtn" class="btn-secondary">📥 Import (Merge)</button>
-              <button id="importOverwriteBtn" class="btn-secondary" style="color: #ff4d4f; border-color: #ff4d4f;">📥 Import (Overwrite)</button>
-              <input type="file" id="importFileInput" accept=".json" style="display: none;">
-            </div>
+          <div class="setting-actions">
+            <button id="exportBtn" class="btn-secondary">Export</button>
+            <button id="importMergeBtn" class="btn-secondary">Import and merge</button>
+            <button id="importOverwriteBtn" class="btn-secondary danger">Import and replace</button>
+            <input type="file" id="importFileInput" accept=".json" hidden>
           </div>
-        </section>
-      </div>
-    </main>
+        </div>
+      </section>
+    </div>
+  </main>
 
-  </div>
-
-  <!-- Modal for Creating/Editing Rules -->
+  <!-- Create / edit rule -->
   <div id="ruleModal" class="modal-overlay hidden">
-    <div class="modal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
       <div class="modal-header">
-        <h2 id="modalTitle">Create New Rule</h2>
-        <button id="closeModalBtn" class="btn-close">×</button>
+        <h2 id="modalTitle">New rule</h2>
+        <button id="closeModalBtn" class="btn-close" aria-label="Close">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M2 2l10 10M12 2L2 12"/></svg>
+        </button>
       </div>
-      
+
       <div class="modal-body">
         <form id="ruleForm">
           <div class="form-group">
-            <label>If the URL...</label>
+            <label for="conditionType">When the address</label>
             <div class="input-group">
               <select id="conditionType" required>
-                <option value="startsWith">Starts with</option>
-                <option value="endsWith">Ends with</option>
-                <option value="contains">Contains</option>
-                <option value="notContains">Does not contain</option>
-                <option value="exact">Is exactly</option>
+                <option value="startsWith">starts with</option>
+                <option value="endsWith">ends with</option>
+                <option value="contains">contains</option>
+                <option value="notContains">does not contain</option>
+                <option value="exact">is exactly</option>
               </select>
-              <input type="text" id="conditionValue" placeholder="e.g. github.com" required>
+              <input type="text" id="conditionValue" placeholder="e.g. github.com" required spellcheck="false">
             </div>
           </div>
 
           <div class="form-group">
-            <label>Then change the Tab Name to...</label>
-            <input type="text" id="actionTitle" placeholder="Leave blank to keep original name">
+            <label for="actionTitle">Tab name</label>
+            <input type="text" id="actionTitle" placeholder="Keep original name">
           </div>
 
           <div class="form-group">
-            <label>And change the Icon to...</label>
+            <span class="label">Icon</span>
             <div class="icon-selector-group">
               <div class="radio-group">
                 <label>
-                  <input type="radio" name="iconType" value="emoji" checked> 
+                  <input type="radio" name="iconType" value="emoji" checked>
                   Emoji
                 </label>
                 <label>
-                  <input type="radio" name="iconType" value="image"> 
-                  Custom Image
+                  <input type="radio" name="iconType" value="image">
+                  Custom image
                 </label>
               </div>
 
               <div id="emojiInputGroup" class="sub-input-group">
-                <input type="text" id="actionEmoji" placeholder="Enter an emoji (e.g. 🔥)" maxlength="5">
+                <input type="text" id="actionEmoji" placeholder="Enter an emoji, e.g. 🔥" maxlength="5" aria-label="Emoji">
               </div>
 
               <div id="imageInputGroup" class="sub-input-group hidden">
-                <input type="file" id="actionImage" accept="image/png, image/jpeg, image/x-icon, image/svg+xml">
+                <input type="file" id="actionImage" accept="image/png, image/jpeg, image/x-icon, image/svg+xml" aria-label="Icon image">
                 <div id="imagePreview" class="image-preview">
                   <span class="preview-placeholder">No image selected</span>
                 </div>
@@ -141,10 +135,10 @@
           </div>
         </form>
       </div>
-      
+
       <div class="modal-footer">
         <button id="cancelRuleBtn" class="btn-secondary">Cancel</button>
-        <button id="saveRuleBtn" class="btn-primary">Save Rule</button>
+        <button id="saveRuleBtn" class="btn-primary">Save rule</button>
       </div>
     </div>
   </div>
