@@ -16,6 +16,7 @@
   --accent-soft: #e8effd;
   --success: #15803d;
   --success-soft: #e6f4ea;
+  --support: #d9432f;
   --radius: 8px;
 }
 
@@ -33,6 +34,7 @@
     --accent-soft: #1d2a44;
     --success: #6ee7a0;
     --success-soft: #16301f;
+    --support: #ff7a66;
   }
 }
 
@@ -154,5 +156,30 @@ input[type="text"]:focus, select:focus { outline: none; border-color: var(--acce
   color: var(--muted);
 }
 body.ext-off .content { opacity: .45; }
+
+/* Footer: support button and profile links */
+.footer {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.support-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  height: 30px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: background .15s ease, border-color .15s ease;
+}
+.support-btn svg { color: var(--support); }
+.support-btn:hover { background: var(--hover); border-color: var(--support); }
+.links { display: flex; gap: 2px; }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
